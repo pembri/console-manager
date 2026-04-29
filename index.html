@@ -3,141 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GSC VIP Manager - Professional Indexing Tool</title>
+    <title>SAI Roots | Console Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
-    <!-- jsrsasign untuk RS256 JWT Signing di browser -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.8.6/jsrsasign-all-min.js"></script>
 </head>
 <body>
-    <header class="main-header">
-        <div class="logo">
-            <span class="logo-icon">🔥</span>
-            <h1>GSC VIP <span class="accent">MANAGER</span></h1>
+
+    <div id="login-screen" class="fixed inset-0 z-50 bg-neutral-950 flex flex-col items-center justify-center p-6">
+        <div class="bg-neutral-900 border border-white/10 p-8 rounded-lg shadow-2xl w-full max-w-sm text-center">
+            <h2 class="text-2xl font-bold text-green-500 mb-6 uppercase tracking-widest">Akses Terkunci</h2>
+            <input type="number" id="password-input" class="w-full bg-black border border-white/10 px-4 py-3 text-white text-center text-xl focus:outline-none focus:border-green-500 mb-4" placeholder="Masukkan Sandi">
+            <button onclick="checkPassword()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded uppercase">Buka Tools</button>
+            <p id="login-error" class="text-red-500 text-xs mt-4 hidden">Sandi Salah!</p>
         </div>
-        <div class="header-info">
-            <span class="badge">PRO EDITION</span>
+    </div>
+
+    <div id="main-dashboard" class="hidden p-4 md:p-8 max-w-4xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold uppercase tracking-widest">Console <span class="text-green-600">Manager</span></h1>
+            <p class="text-gray-500 text-[10px] mt-2 uppercase tracking-widest">SAI ROOTS INDEXING SYSTEM</p>
+        </header>
+
+        <div class="bg-neutral-900 p-4 rounded border border-gray-800 mb-6">
+            <label class="block text-[10px] text-gray-500 uppercase mb-2">URL Web App Google Script</label>
+            <input type="text" id="gas-url" class="w-full bg-black border border-gray-700 p-2 text-sm text-white focus:border-green-500 outline-none rounded" value="https://script.google.com/macros/s/AKfycbynokPlBR_LdT8h9gL7aBkNzEnupgs5VmBwJCVXTTIBJsN27oT7QVd2VQSXUdbAN27Jow/exec">
         </div>
-    </header>
 
-    <main class="container">
-        <!-- PANEL AUTH & QUOTA -->
-        <section class="panel auth-panel">
-            <h2><span class="icon">🔐</span> Authentication & Quota</h2>
-            <div class="auth-grid">
-                <div class="auth-input">
-                    <label for="jsonFile">Service Account JSON File</label>
-                    <input type="file" id="jsonFile" accept="*/*">
-                    <div id="authStatus" class="status-text">⚠️ Belum ada file diupload</div>
-                </div>
-                <div class="quota-display">
-                    <h3>Daily Quota</h3>
-                    <div class="quota-bar-container">
-                        <div id="quotaBar" class="quota-bar"></div>
-                    </div>
-                    <div class="quota-text">
-                        <span id="quotaUsed">0</span> / <span id="quotaLimit">200</span> Requests
-                    </div>
-                   <button id="resetQuotaBtn" class="btn-small">Reset Quota</button>
-                </div>
+        <div class="flex border-b border-gray-800 mb-6 text-[10px] uppercase tracking-widest overflow-x-auto">
+            <button onclick="switchTab('tab-manual')" id="btn-manual" class="pb-3 px-4 tab-active">Manual & Sitemap</button>
+            <button onclick="switchTab('tab-all')" id="btn-all" class="pb-3 px-4 tab-inactive">Database URL</button>
+            <button onclick="switchTab('tab-indexed')" id="btn-indexed" class="pb-3 px-4 tab-inactive text-green-500">✔ Terindeks</button>
+            <button onclick="switchTab('tab-not-indexed')" id="btn-not-indexed" class="pb-3 px-4 tab-inactive text-red-500">✖ Belum Indeks</button>
+        </div>
+
+        <div id="tab-manual" class="tab-content block bg-neutral-900 p-6 rounded border border-gray-800">
+            <input type="text" id="target-url" class="w-full bg-black border border-gray-700 p-3 rounded text-sm mb-4 focus:border-green-500 outline-none" placeholder="Masukkan URL atau Link Sitemap">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <button onclick="executeApi(document.getElementById('target-url').value, 'update')" class="bg-green-600 p-3 rounded font-bold text-[10px] uppercase">Minta Indeks</button>
+                <button onclick="executeApi(document.getElementById('target-url').value, 'check')" class="bg-blue-600 p-3 rounded font-bold text-[10px] uppercase">Uji URL</button>
+                <button onclick="executeApi(document.getElementById('target-url').value, 'delete')" class="bg-red-600 p-3 rounded font-bold text-[10px] uppercase text-white">Hapus Indeks</button>
+                <button onclick="executeApi(document.getElementById('target-url').value, 'sitemap')" class="bg-yellow-600 p-3 rounded font-bold text-[10px] uppercase text-black">Kirim Sitemap</button>
             </div>
-        </section>
+        </div>
 
-        <!-- PANEL INPUT UTAMA -->
-        <section class="panel input-panel">
-            <h2><span class="icon">⚡</span> Input Operations</h2>
-            <div class="input-grid">
-                <!-- Manual Indexing -->
-                <div class="input-card">
-                    <h3>📤 Manual Indexing</h3>
-                    <p class="card-desc">Submit single URL to Google Indexing API</p>
-                    <input type="url" id="manualUrl" placeholder="https://example.com/page">
-                    <button id="submitManualBtn" class="btn-primary">SUBMIT URL</button>
-                </div>
+        <div id="tab-all" class="tab-content hidden bg-neutral-900 p-4 rounded border border-gray-800">
+            <div id="list-all" class="space-y-2 max-h-96 overflow-y-auto pr-2"></div>
+        </div>
 
-                <!-- Sitemap Massal -->
-                <div class="input-card">
-                    <h3>🗺️ Sitemap Bulk Scan</h3>
-                    <p class="card-desc">Auto-scan all URLs from sitemap.xml</p>
-                    <input type="url" id="sitemapUrl" placeholder="https://example.com/sitemap.xml">
-                    <button id="loadSitemapBtn" class="btn-primary">LOAD SITEMAP</button>
-                </div>
+        <div id="tab-indexed" class="tab-content hidden bg-neutral-900 p-4 rounded border border-green-900/30">
+            <div id="list-indexed" class="space-y-2"></div>
+        </div>
 
-                <!-- URL Removal -->
-                <div class="input-card">
-                    <h3>🗑️ URL Removal</h3>
-                    <p class="card-desc">Remove URL from Google Index</p>
-                    <input type="url" id="removeUrl" placeholder="https://example.com/old-page">
-                    <button id="removeUrlBtn" class="btn-danger">REMOVE URL</button>
-                </div>
-            </div>
-        </section>
+        <div id="tab-not-indexed" class="tab-content hidden bg-neutral-900 p-4 rounded border border-red-900/30">
+            <div id="list-not-indexed" class="space-y-2"></div>
+        </div>
 
-        <!-- ACTION BAR -->
-        <section class="panel action-panel">
-            <div class="action-bar">
-                <button id="scanAllBtn" class="btn-mega">
-                    🔍 SCAN ALL INDEX STATUS
-                </button>
-                <button id="submitAllBtn" class="btn-mega-secondary">
-                    🚀 INDEX ALL URLS
-                </button>
-                <button id="clearAllBtn" class="btn-outline">
-                    🗑️ CLEAR ALL
-                </button>
-                <button id="exportBtn" class="btn-outline">
-                    📥 EXPORT CSV
-                </button>
-            </div>
-            <div id="progressContainer" class="progress-container hidden">
-                <div class="progress-info">
-                    <span id="progressText">Processing...</span>
-                    <span id="progressCount">0/0</span>
-                </div>
-                <div class="progress-bar-container">
-                    <div id="progressBar" class="progress-bar"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- TABLE MONITORING -->
-        <section class="panel table-panel">
-            <h2><span class="icon">📊</span> URL Monitoring Table</h2>
-            <div class="table-stats">
-                <div class="stat-item"><span class="stat-label">Total:</span> <span id="statTotal">0</span></div>
-                <div class="stat-item"><span class="stat-label">Indexed:</span> <span id="statIndexed" class="success">0</span></div>
-                <div class="stat-item"><span class="stat-label">Not Indexed:</span> <span id="statNotIndexed" class="danger">0</span></div>
-                <div class="stat-item"><span class="stat-label">Pending:</span> <span id="statPending" class="warning">0</span></div>
-            </div>
-            <div class="table-wrapper">
-                <table id="urlTable">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>URL Link</th>
-                            <th>API Status</th>
-                            <th>Google Index Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        <tr class="empty-row">
-                            <td colspan="5">No URLs added yet. Use the input panels above.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- LOG PANEL -->
-        <section class="panel log-panel">
-            <h2><span class="icon">📋</span> Activity Log</h2>
-            <div id="logContainer" class="log-container"></div>
-        </section>
-    </main>
-
-    <footer class="main-footer">
-        <p>GSC VIP Manager &copy; 2026 | Built with jsrsasign + corsproxy.io</p>
-    </footer>
+        <div class="mt-6 bg-black p-4 rounded border border-gray-800 min-h-[120px]">
+            <p class="text-[9px] text-gray-600 uppercase mb-2">System Logs:</p>
+            <pre id="output" class="text-[11px] text-green-500 whitespace-pre-wrap">Siap digunakan...</pre>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>
