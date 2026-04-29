@@ -1,0 +1,95 @@
+/* Custom Scrollbar biar makin smooth */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #020617;
+}
+::-webkit-scrollbar-thumb {
+    background: #ea580c;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #fb923c;
+}
+
+/* Animasi Background & Efek Glow */
+body {
+    background: radial-gradient(circle at top right, #1e1b4b, #020617 40%);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+}
+
+/* Glassmorphism Effect untuk Card */
+.bg-slate-900 {
+    background-color: rgba(15, 23, 42, 0.8) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* Animasi Tombol */
+button {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+button:hover::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* Status Badge Styling */
+.status-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+}
+
+/* Table Hover Effect */
+tr {
+    transition: background-color 0.2s ease;
+}
+
+tr:hover td {
+    color: #fb923c !important;
+}
+
+/* Input Focus Glow */
+input:focus {
+    box-shadow: 0 0 15px rgba(234, 88, 12, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Loader Animation */
+#loader i {
+    filter: drop-shadow(0 0 10px #ea580c);
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
