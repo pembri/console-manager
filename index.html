@@ -5,62 +5,160 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SAI Roots | Console Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="bg-[#050505] text-white font-sans antialiased">
 
-    <div id="login-screen" class="fixed inset-0 z-50 bg-neutral-950 flex flex-col items-center justify-center p-6">
-        <div class="bg-neutral-900 border border-white/10 p-8 rounded-lg shadow-2xl w-full max-w-sm text-center">
-            <h2 class="text-2xl font-bold text-green-500 mb-6 uppercase tracking-widest">Akses Terkunci</h2>
-            <input type="number" id="password-input" class="w-full bg-black border border-white/10 px-4 py-3 text-white text-center text-xl focus:outline-none focus:border-green-500 mb-4" placeholder="Masukkan Sandi">
-            <button onclick="checkPassword()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded uppercase">Buka Tools</button>
-            <p id="login-error" class="text-red-500 text-xs mt-4 hidden">Sandi Salah!</p>
+    <div id="login-section" class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 px-4">
+        <div class="bg-neutral-900 border border-neutral-800 p-8 rounded-xl shadow-2xl w-full max-w-md text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-green-600"></div>
+            <h1 class="text-3xl font-bold uppercase tracking-widest mb-1">Console <span class="text-green-500">Manager</span></h1>
+            <p class="text-xs text-gray-500 uppercase tracking-widest mb-8">SAI Roots Secure Access</p>
+            
+            <div class="space-y-4 text-left">
+                <div>
+                    <label class="block text-[10px] text-gray-400 uppercase mb-1"><i class="fas fa-key mr-1"></i> Kata Sandi (PIN)</label>
+                    <input type="number" id="input-pin" class="w-full bg-black border border-neutral-700 p-3 rounded-lg text-white focus:border-green-500 outline-none transition" placeholder="Masukkan PIN">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-gray-400 uppercase mb-1"><i class="fas fa-link mr-1"></i> URL Script (Google Apps Script)</label>
+                    <input type="url" id="input-url" class="w-full bg-black border border-neutral-700 p-3 rounded-lg text-white focus:border-green-500 outline-none transition text-sm" placeholder="https://script.google.com/macros/s/.../exec">
+                </div>
+            </div>
+
+            <p id="login-msg" class="text-red-500 text-xs mt-4 hidden font-bold"></p>
+            
+            <button onclick="prosesLogin()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 mt-6 rounded-lg uppercase tracking-widest transition">
+                <i class="fas fa-sign-in-alt mr-2"></i> Masuk Sistem
+            </button>
         </div>
     </div>
 
-    <div id="main-dashboard" class="hidden p-4 md:p-8 max-w-4xl mx-auto">
-        <header class="text-center mb-8">
-            <h1 class="text-3xl font-bold uppercase tracking-widest">Console <span class="text-green-600">Manager</span></h1>
-            <p class="text-gray-500 text-[10px] mt-2 uppercase tracking-widest">SAI ROOTS INDEXING SYSTEM</p>
+
+    <div id="dashboard-section" class="hidden min-h-screen pb-20">
+        
+        <header class="bg-neutral-900 border-b border-neutral-800 p-4 sticky top-0 z-40">
+            <div class="max-w-3xl mx-auto flex justify-between items-center">
+                <div>
+                    <h1 class="text-xl font-bold uppercase tracking-widest">Console <span class="text-green-500">Manager</span></h1>
+                </div>
+                <button onclick="logout()" class="text-xs text-red-500 hover:text-red-400 uppercase font-bold">
+                    <i class="fas fa-power-off mr-1"></i> Keluar
+                </button>
+            </div>
         </header>
 
-        <div class="bg-neutral-900 p-4 rounded border border-gray-800 mb-6">
-            <label class="block text-[10px] text-gray-500 uppercase mb-2">URL Web App Google Script</label>
-            <input type="text" id="gas-url" class="w-full bg-black border border-gray-700 p-2 text-sm text-white focus:border-green-500 outline-none rounded" value="https://script.google.com/macros/s/AKfycbynokPlBR_LdT8h9gL7aBkNzEnupgs5VmBwJCVXTTIBJsN27oT7QVd2VQSXUdbAN27Jow/exec">
-        </div>
+        <main class="max-w-3xl mx-auto p-4 mt-6">
+            <p class="text-xs text-gray-500 uppercase tracking-widest mb-4">Menu Aksi Manual</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+                
+                <button onclick="bukaPopup('popup-minta-indeks')" class="menu-card bg-neutral-900 border border-neutral-800 hover:border-green-500 p-5 rounded-xl text-left transition group">
+                    <i class="fas fa-paper-plane text-2xl text-green-500 mb-3 group-hover:scale-110 transition"></i>
+                    <h3 class="font-bold text-sm uppercase">Minta Pengindeksan</h3>
+                    <p class="text-[10px] text-gray-500 mt-1">Kirim URL baru ke Google</p>
+                </button>
 
-        <div class="flex border-b border-gray-800 mb-6 text-[10px] uppercase tracking-widest overflow-x-auto">
-            <button onclick="switchTab('tab-manual')" id="btn-manual" class="pb-3 px-4 tab-active">Manual & Sitemap</button>
-            <button onclick="switchTab('tab-all')" id="btn-all" class="pb-3 px-4 tab-inactive">Database URL</button>
-            <button onclick="switchTab('tab-indexed')" id="btn-indexed" class="pb-3 px-4 tab-inactive text-green-500">✔ Terindeks</button>
-            <button onclick="switchTab('tab-not-indexed')" id="btn-not-indexed" class="pb-3 px-4 tab-inactive text-red-500">✖ Belum Indeks</button>
-        </div>
+                <button onclick="bukaPopup('popup-uji-url')" class="menu-card bg-neutral-900 border border-neutral-800 hover:border-blue-500 p-5 rounded-xl text-left transition group">
+                    <i class="fas fa-search text-2xl text-blue-500 mb-3 group-hover:scale-110 transition"></i>
+                    <h3 class="font-bold text-sm uppercase">Uji URL Aktif</h3>
+                    <p class="text-[10px] text-gray-500 mt-1">Cek status ketersediaan URL</p>
+                </button>
 
-        <div id="tab-manual" class="tab-content block bg-neutral-900 p-6 rounded border border-gray-800">
-            <input type="text" id="target-url" class="w-full bg-black border border-gray-700 p-3 rounded text-sm mb-4 focus:border-green-500 outline-none" placeholder="Masukkan URL atau Link Sitemap">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <button onclick="executeApi(document.getElementById('target-url').value, 'update')" class="bg-green-600 p-3 rounded font-bold text-[10px] uppercase">Minta Indeks</button>
-                <button onclick="executeApi(document.getElementById('target-url').value, 'check')" class="bg-blue-600 p-3 rounded font-bold text-[10px] uppercase">Uji URL</button>
-                <button onclick="executeApi(document.getElementById('target-url').value, 'delete')" class="bg-red-600 p-3 rounded font-bold text-[10px] uppercase text-white">Hapus Indeks</button>
-                <button onclick="executeApi(document.getElementById('target-url').value, 'sitemap')" class="bg-yellow-600 p-3 rounded font-bold text-[10px] uppercase text-black">Kirim Sitemap</button>
+                <button onclick="bukaPopup('popup-sitemap')" class="menu-card bg-neutral-900 border border-neutral-800 hover:border-yellow-500 p-5 rounded-xl text-left transition group">
+                    <i class="fas fa-sitemap text-2xl text-yellow-500 mb-3 group-hover:scale-110 transition"></i>
+                    <h3 class="font-bold text-sm uppercase">Peta Situs (Sitemap)</h3>
+                    <p class="text-[10px] text-gray-500 mt-1">Submit ulang file sitemap.xml</p>
+                </button>
+            </div>
+
+            <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 flex justify-between items-center">
+                <span>Database Indexing</span>
+                <button onclick="mulaiScanDatabase()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-[10px] font-bold"><i class="fas fa-sync-alt mr-1"></i> Scan & Uji Semua</button>
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-neutral-900 border border-green-900/50 rounded-xl overflow-hidden flex flex-col h-[500px]">
+                    <div class="bg-black/50 p-4 border-b border-green-900/50">
+                        <h3 class="font-bold text-sm text-green-500 uppercase flex items-center"><i class="fas fa-check-circle mr-2"></i> URL Tersedia</h3>
+                        <p class="text-[10px] text-gray-400 mt-1">Sudah terindeks di Google.</p>
+                    </div>
+                    <div id="list-tersedia" class="flex-1 overflow-y-auto p-4 space-y-3">
+                        <p class="text-xs text-gray-600 italic text-center mt-10">Klik "Scan & Uji Semua" untuk memuat data...</p>
+                        </div>
+                </div>
+
+                <div class="bg-neutral-900 border border-red-900/50 rounded-xl overflow-hidden flex flex-col h-[500px]">
+                    <div class="bg-black/50 p-4 border-b border-red-900/50">
+                        <h3 class="font-bold text-sm text-red-500 uppercase flex items-center"><i class="fas fa-times-circle mr-2"></i> Belum Terindeks</h3>
+                        <p class="text-[10px] text-gray-400 mt-1">Tidak ditemukan di pencarian Google.</p>
+                    </div>
+                    <div id="list-belum" class="flex-1 overflow-y-auto p-4 space-y-3">
+                        <p class="text-xs text-gray-600 italic text-center mt-10">Klik "Scan & Uji Semua" untuk memuat data...</p>
+                        </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+
+    <div id="popup-minta-indeks" class="fixed inset-0 z-50 hidden bg-black/80 flex items-center justify-center px-4 backdrop-blur-sm">
+        <div class="bg-neutral-900 border border-neutral-700 rounded-xl w-full max-w-md overflow-hidden">
+            <div class="flex justify-between items-center p-4 border-b border-neutral-800 bg-black/50">
+                <h3 class="font-bold text-green-500 uppercase tracking-widest text-sm"><i class="fas fa-paper-plane mr-2"></i> Minta Pengindeksan</h3>
+                <button onclick="tutupPopup('popup-minta-indeks')" class="text-gray-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6">
+                <input type="url" id="input-minta-url" class="w-full bg-black border border-neutral-700 p-3 rounded-lg text-white focus:border-green-500 outline-none text-sm mb-4" placeholder="https://sairootsmusic.com/...">
+                <button onclick="jalankanMintaIndeks()" class="w-full bg-green-600 hover:bg-green-700 font-bold py-3 rounded-lg uppercase text-sm flex justify-center items-center">
+                    <i class="fas fa-play mr-2"></i> Jalankan
+                </button>
+                
+                <div class="mt-4 bg-black border border-neutral-800 rounded-lg p-3 min-h-[80px]">
+                    <p class="text-[10px] text-gray-500 uppercase mb-1 border-b border-neutral-800 pb-1">Progres Real-time:</p>
+                    <pre id="log-minta-indeks" class="text-xs text-green-400 whitespace-pre-wrap word-break">Menunggu perintah...</pre>
+                </div>
             </div>
         </div>
+    </div>
 
-        <div id="tab-all" class="tab-content hidden bg-neutral-900 p-4 rounded border border-gray-800">
-            <div id="list-all" class="space-y-2 max-h-96 overflow-y-auto pr-2"></div>
+    <div id="popup-uji-url" class="fixed inset-0 z-50 hidden bg-black/80 flex items-center justify-center px-4 backdrop-blur-sm">
+        <div class="bg-neutral-900 border border-neutral-700 rounded-xl w-full max-w-md overflow-hidden">
+            <div class="flex justify-between items-center p-4 border-b border-neutral-800 bg-black/50">
+                <h3 class="font-bold text-blue-500 uppercase tracking-widest text-sm"><i class="fas fa-search mr-2"></i> Uji URL Aktif</h3>
+                <button onclick="tutupPopup('popup-uji-url')" class="text-gray-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6">
+                <input type="url" id="input-uji-url" class="w-full bg-black border border-neutral-700 p-3 rounded-lg text-white focus:border-blue-500 outline-none text-sm mb-4" placeholder="https://sairootsmusic.com/...">
+                <button onclick="jalankanUjiUrl()" class="w-full bg-blue-600 hover:bg-blue-700 font-bold py-3 rounded-lg uppercase text-sm flex justify-center items-center">
+                    <i class="fas fa-stethoscope mr-2"></i> Uji Sekarang
+                </button>
+                
+                <div class="mt-4 bg-black border border-neutral-800 rounded-lg p-3 min-h-[80px]">
+                    <p class="text-[10px] text-gray-500 uppercase mb-1 border-b border-neutral-800 pb-1">Progres Real-time:</p>
+                    <pre id="log-uji-url" class="text-xs text-blue-400 whitespace-pre-wrap word-break">Menunggu perintah...</pre>
+                </div>
+            </div>
         </div>
+    </div>
 
-        <div id="tab-indexed" class="tab-content hidden bg-neutral-900 p-4 rounded border border-green-900/30">
-            <div id="list-indexed" class="space-y-2"></div>
-        </div>
-
-        <div id="tab-not-indexed" class="tab-content hidden bg-neutral-900 p-4 rounded border border-red-900/30">
-            <div id="list-not-indexed" class="space-y-2"></div>
-        </div>
-
-        <div class="mt-6 bg-black p-4 rounded border border-gray-800 min-h-[120px]">
-            <p class="text-[9px] text-gray-600 uppercase mb-2">System Logs:</p>
-            <pre id="output" class="text-[11px] text-green-500 whitespace-pre-wrap">Siap digunakan...</pre>
+    <div id="popup-sitemap" class="fixed inset-0 z-50 hidden bg-black/80 flex items-center justify-center px-4 backdrop-blur-sm">
+        <div class="bg-neutral-900 border border-neutral-700 rounded-xl w-full max-w-md overflow-hidden">
+            <div class="flex justify-between items-center p-4 border-b border-neutral-800 bg-black/50">
+                <h3 class="font-bold text-yellow-500 uppercase tracking-widest text-sm"><i class="fas fa-sitemap mr-2"></i> Peta Situs</h3>
+                <button onclick="tutupPopup('popup-sitemap')" class="text-gray-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6">
+                <input type="text" id="input-sitemap" class="w-full bg-black border border-neutral-700 p-3 rounded-lg text-white focus:border-yellow-500 outline-none text-sm mb-4" placeholder="sitemap.xml">
+                <button onclick="jalankanSitemap()" class="w-full bg-yellow-600 hover:bg-yellow-700 text-black font-bold py-3 rounded-lg uppercase text-sm flex justify-center items-center">
+                    <i class="fas fa-upload mr-2"></i> Kirim Sitemap
+                </button>
+                
+                <div class="mt-4 bg-black border border-neutral-800 rounded-lg p-3 min-h-[80px]">
+                    <p class="text-[10px] text-gray-500 uppercase mb-1 border-b border-neutral-800 pb-1">Progres Real-time:</p>
+                    <pre id="log-sitemap" class="text-xs text-yellow-500 whitespace-pre-wrap word-break">Menunggu perintah...</pre>
+                </div>
+            </div>
         </div>
     </div>
 
