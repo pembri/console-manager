@@ -4,7 +4,7 @@
 
 // ===== CONFIG =====
 const CONFIG = {
-    CORS_PROXY: 'https://corsproxy.io/?',
+    CORS_PROXY: 'https://api.allorigins.win/raw?url=',
     SCOPES: 'https://www.googleapis.com/auth/indexing https://www.googleapis.com/auth/webmasters.readonly',
     TOKEN_URL: 'https://oauth2.googleapis.com/token',
     INDEXING_API: 'https://indexing.googleapis.com/v3/urlNotifications:publish',
