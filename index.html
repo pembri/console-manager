@@ -1,167 +1,378 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAI Roots | Console Manager</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HackerOS v2.0</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body class="bg-[#050505] text-white font-sans antialiased">
+<body>
 
-    <div id="login-section" class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 px-4">
-        <div class="bg-neutral-900 border border-neutral-800 p-8 rounded-xl shadow-2xl w-full max-w-md text-center relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1 bg-green-600"></div>
-            <h1 class="text-3xl font-bold uppercase tracking-widest mb-1">Console <span class="text-green-500">Manager</span></h1>
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-8">SAI Roots Secure Access</p>
-            
-            <div class="space-y-4 text-left">
-                <div>
-                    <label class="block text-[10px] text-gray-400 uppercase mb-1"><i class="fas fa-key mr-1"></i> Kata Sandi (PIN)</label>
-                    <input type="number" id="input-pin" class="w-full bg-black border border-neutral-700 p-3 rounded-lg text-white focus:border-green-500 outline-none transition" placeholder="Masukkan PIN">
-                </div>
-                <div>
-                    <label class="block text-[10px] text-gray-400 uppercase mb-1"><i class="fas fa-link mr-1"></i> URL Script (Google Apps Script)</label>
-                    <input type="url" id="input-url" class="w-full bg-black border border-neutral-700 p-3 rounded-lg text-white focus:border-green-500 outline-none transition text-sm" placeholder="https://script.google.com/macros/s/.../exec">
-                </div>
-            </div>
+  <canvas id="matrixCanvas"></canvas>
+  <div id="glitchOverlay"></div>
 
-            <p id="login-msg" class="text-red-500 text-xs mt-4 hidden font-bold"></p>
-            
-            <button onclick="prosesLogin()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 mt-6 rounded-lg uppercase tracking-widest transition">
-                <i class="fas fa-sign-in-alt mr-2"></i> Masuk Sistem
-            </button>
+  <!-- ══ SPLASH SCREEN ══ -->
+  <div id="splashScreen">
+    <div class="splash-inner">
+      <div class="splash-logo">
+        <span class="logo-bracket">[</span>
+        <span class="logo-text">HACKER<span class="logo-os">OS</span></span>
+        <span class="logo-bracket">]</span>
+      </div>
+      <div class="splash-ver">v2.0 — CLASSIFIED SYSTEM</div>
+      <div class="splash-terminal" id="splashTerminal"></div>
+      <div class="splash-bar-wrap">
+        <div class="splash-bar-fill" id="splashBar"></div>
+      </div>
+      <div class="splash-pct" id="splashPct">0%</div>
+    </div>
+  </div>
+
+  <!-- ══ LOGIN SCREEN ══ -->
+  <div id="loginScreen" style="display:none;">
+    <div class="login-box">
+      <div class="login-skull">💀</div>
+      <div class="login-title">HACKEROS <span class="login-ver">v2.0</span></div>
+      <div class="login-sub">// AUTHORIZED ACCESS ONLY</div>
+      <div class="login-user">root@hackeros:~$</div>
+      <div class="pin-wrap">
+        <div class="pin-dots" id="pinDots">
+          <span class="pin-dot" id="dot0"></span>
+          <span class="pin-dot" id="dot1"></span>
+          <span class="pin-dot" id="dot2"></span>
+          <span class="pin-dot" id="dot3"></span>
+          <span class="pin-dot" id="dot4"></span>
+          <span class="pin-dot" id="dot5"></span>
         </div>
+        <div class="pin-error" id="pinError"></div>
+      </div>
+      <div class="numpad">
+        <button class="np-btn" onclick="pinInput('1')">1</button>
+        <button class="np-btn" onclick="pinInput('2')">2</button>
+        <button class="np-btn" onclick="pinInput('3')">3</button>
+        <button class="np-btn" onclick="pinInput('4')">4</button>
+        <button class="np-btn" onclick="pinInput('5')">5</button>
+        <button class="np-btn" onclick="pinInput('6')">6</button>
+        <button class="np-btn" onclick="pinInput('7')">7</button>
+        <button class="np-btn" onclick="pinInput('8')">8</button>
+        <button class="np-btn" onclick="pinInput('9')">9</button>
+        <button class="np-btn np-clear" onclick="pinClear()">CLR</button>
+        <button class="np-btn" onclick="pinInput('0')">0</button>
+        <button class="np-btn np-del" onclick="pinDel()">⌫</button>
+      </div>
+      <div class="login-hint">// ENTER ACCESS CODE</div>
+    </div>
+  </div>
+
+  <!-- ══ MAIN OS ══ -->
+  <div id="mainOS" style="display:none;">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="tb-dot red"></span>
+        <span class="tb-dot yellow"></span>
+        <span class="tb-dot green"></span>
+        <span class="tb-brand">HackerOS <span class="tb-ver">v2.0</span></span>
+      </div>
+      <div class="topbar-center">
+        <span id="tbClock">00:00:00</span>
+      </div>
+      <div class="topbar-right">
+        <span class="tb-stat">CPU <span id="tbCpu" class="stat-val">0%</span></span>
+        <span class="tb-stat">RAM <span id="tbRam" class="stat-val">0%</span></span>
+        <span class="tb-stat">NET <span id="tbNet" class="stat-val">0kb/s</span></span>
+        <button class="tb-btn" id="btnMatrix" onclick="toggleMatrix()">MATRIX</button>
+        <button class="tb-btn" id="btnSound" onclick="toggleSound()">SOUND ON</button>
+      </div>
     </div>
 
+    <!-- MAIN LAYOUT -->
+    <div class="main-layout">
 
-    <div id="dashboard-section" class="hidden min-h-screen pb-20">
-        
-        <header class="bg-neutral-900 border-b border-neutral-800 p-4 sticky top-0 z-40">
-            <div class="max-w-3xl mx-auto flex justify-between items-center">
-                <div>
-                    <h1 class="text-xl font-bold uppercase tracking-widest">Console <span class="text-green-500">Manager</span></h1>
-                </div>
-                <button onclick="logout()" class="text-xs text-red-500 hover:text-red-400 uppercase font-bold">
-                    <i class="fas fa-power-off mr-1"></i> Keluar
-                </button>
-            </div>
-        </header>
-
-        <main class="max-w-3xl mx-auto p-4 mt-6">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-4">Menu Aksi Manual</p>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-                
-                <button onclick="bukaPopup('popup-minta-indeks')" class="menu-card bg-neutral-900 border border-neutral-800 hover:border-green-500 p-5 rounded-xl text-left transition group">
-                    <i class="fas fa-paper-plane text-2xl text-green-500 mb-3 group-hover:scale-110 transition"></i>
-                    <h3 class="font-bold text-sm uppercase">Minta Pengindeksan</h3>
-                    <p class="text-[10px] text-gray-500 mt-1">Kirim URL baru ke Google</p>
-                </button>
-
-                <button onclick="bukaPopup('popup-uji-url')" class="menu-card bg-neutral-900 border border-neutral-800 hover:border-blue-500 p-5 rounded-xl text-left transition group">
-                    <i class="fas fa-search text-2xl text-blue-500 mb-3 group-hover:scale-110 transition"></i>
-                    <h3 class="font-bold text-sm uppercase">Uji URL Aktif</h3>
-                    <p class="text-[10px] text-gray-500 mt-1">Cek status ketersediaan URL</p>
-                </button>
-
-                <button onclick="bukaPopup('popup-sitemap')" class="menu-card bg-neutral-900 border border-neutral-800 hover:border-yellow-500 p-5 rounded-xl text-left transition group">
-                    <i class="fas fa-sitemap text-2xl text-yellow-500 mb-3 group-hover:scale-110 transition"></i>
-                    <h3 class="font-bold text-sm uppercase">Peta Situs (Sitemap)</h3>
-                    <p class="text-[10px] text-gray-500 mt-1">Submit ulang file sitemap.xml</p>
-                </button>
-            </div>
-
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 flex justify-between items-center">
-                <span>Database Indexing</span>
-                <button onclick="mulaiScanDatabase()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-[10px] font-bold"><i class="fas fa-sync-alt mr-1"></i> Scan & Uji Semua</button>
-            </p>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-neutral-900 border border-green-900/50 rounded-xl overflow-hidden flex flex-col h-[500px]">
-                    <div class="bg-black/50 p-4 border-b border-green-900/50">
-                        <h3 class="font-bold text-sm text-green-500 uppercase flex items-center"><i class="fas fa-check-circle mr-2"></i> URL Tersedia</h3>
-                        <p class="text-[10px] text-gray-400 mt-1">Sudah terindeks di Google.</p>
-                    </div>
-                    <div id="list-tersedia" class="flex-1 overflow-y-auto p-4 space-y-3">
-                        <p class="text-xs text-gray-600 italic text-center mt-10">Klik "Scan & Uji Semua" untuk memuat data...</p>
-                        </div>
-                </div>
-
-                <div class="bg-neutral-900 border border-red-900/50 rounded-xl overflow-hidden flex flex-col h-[500px]">
-                    <div class="bg-black/50 p-4 border-b border-red-900/50">
-                        <h3 class="font-bold text-sm text-red-500 uppercase flex items-center"><i class="fas fa-times-circle mr-2"></i> Belum Terindeks</h3>
-                        <p class="text-[10px] text-gray-400 mt-1">Tidak ditemukan di pencarian Google.</p>
-                    </div>
-                    <div id="list-belum" class="flex-1 overflow-y-auto p-4 space-y-3">
-                        <p class="text-xs text-gray-600 italic text-center mt-10">Klik "Scan & Uji Semua" untuk memuat data...</p>
-                        </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-
-    <div id="popup-minta-indeks" class="fixed inset-0 z-50 hidden bg-black/80 flex items-center justify-center px-4 backdrop-blur-sm">
-        <div class="bg-neutral-900 border border-neutral-700 rounded-xl w-full max-w-md overflow-hidden">
-            <div class="flex justify-between items-center p-4 border-b border-neutral-800 bg-black/50">
-                <h3 class="font-bold text-green-500 uppercase tracking-widest text-sm"><i class="fas fa-paper-plane mr-2"></i> Minta Pengindeksan</h3>
-                <button onclick="tutupPopup('popup-minta-indeks')" class="text-gray-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
-            </div>
-            <div class="p-6">
-                <input type="url" id="input-minta-url" class="w-full bg-black border border-neutral-700 p-3 rounded-lg text-white focus:border-green-500 outline-none text-sm mb-4" placeholder="https://sairootsmusic.com/...">
-                <button onclick="jalankanMintaIndeks()" class="w-full bg-green-600 hover:bg-green-700 font-bold py-3 rounded-lg uppercase text-sm flex justify-center items-center">
-                    <i class="fas fa-play mr-2"></i> Jalankan
-                </button>
-                
-                <div class="mt-4 bg-black border border-neutral-800 rounded-lg p-3 min-h-[80px]">
-                    <p class="text-[10px] text-gray-500 uppercase mb-1 border-b border-neutral-800 pb-1">Progres Real-time:</p>
-                    <pre id="log-minta-indeks" class="text-xs text-green-400 whitespace-pre-wrap word-break">Menunggu perintah...</pre>
-                </div>
-            </div>
+      <!-- SIDEBAR -->
+      <div class="sidebar">
+        <div class="sidebar-title">// TOOLS</div>
+        <div class="menu-list">
+          <button class="menu-item active" onclick="showTool('terminal', this)">
+            <span class="mi-icon">⌨</span> Auto Terminal
+          </button>
+          <button class="menu-item" onclick="showTool('iptracer', this)">
+            <span class="mi-icon">🌐</span> IP Tracer
+          </button>
+          <button class="menu-item" onclick="showTool('pwcracker', this)">
+            <span class="mi-icon">🔑</span> Password Cracker
+          </button>
+          <button class="menu-item" onclick="showTool('dbbreach', this)">
+            <span class="mi-icon">🗄</span> DB Breach
+          </button>
+          <button class="menu-item" onclick="showTool('firewall', this)">
+            <span class="mi-icon">🛡</span> Firewall Bypass
+          </button>
+          <button class="menu-item" onclick="showTool('satellite', this)">
+            <span class="mi-icon">🛰</span> Satellite Hack
+          </button>
+          <button class="menu-item" onclick="showTool('virus', this)">
+            <span class="mi-icon">🦠</span> Virus Deploy
+          </button>
+          <button class="menu-item" onclick="showTool('social', this)">
+            <span class="mi-icon">🎭</span> Social Engineer
+          </button>
+          <button class="menu-item" onclick="showTool('compiler', this)">
+            <span class="mi-icon">💻</span> Fake Compiler
+          </button>
+          <button class="menu-item" onclick="showTool('cmd', this)">
+            <span class="mi-icon">$</span> CMD Terminal
+          </button>
         </div>
-    </div>
 
-    <div id="popup-uji-url" class="fixed inset-0 z-50 hidden bg-black/80 flex items-center justify-center px-4 backdrop-blur-sm">
-        <div class="bg-neutral-900 border border-neutral-700 rounded-xl w-full max-w-md overflow-hidden">
-            <div class="flex justify-between items-center p-4 border-b border-neutral-800 bg-black/50">
-                <h3 class="font-bold text-blue-500 uppercase tracking-widest text-sm"><i class="fas fa-search mr-2"></i> Uji URL Aktif</h3>
-                <button onclick="tutupPopup('popup-uji-url')" class="text-gray-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
-            </div>
-            <div class="p-6">
-                <input type="url" id="input-uji-url" class="w-full bg-black border border-neutral-700 p-3 rounded-lg text-white focus:border-blue-500 outline-none text-sm mb-4" placeholder="https://sairootsmusic.com/...">
-                <button onclick="jalankanUjiUrl()" class="w-full bg-blue-600 hover:bg-blue-700 font-bold py-3 rounded-lg uppercase text-sm flex justify-center items-center">
-                    <i class="fas fa-stethoscope mr-2"></i> Uji Sekarang
-                </button>
-                
-                <div class="mt-4 bg-black border border-neutral-800 rounded-lg p-3 min-h-[80px]">
-                    <p class="text-[10px] text-gray-500 uppercase mb-1 border-b border-neutral-800 pb-1">Progres Real-time:</p>
-                    <pre id="log-uji-url" class="text-xs text-blue-400 whitespace-pre-wrap word-break">Menunggu perintah...</pre>
-                </div>
-            </div>
+        <div class="sidebar-sysinfo">
+          <div class="sys-title">// SYSTEM</div>
+          <div class="sys-row">USER <span class="sys-val">root@hackeros</span></div>
+          <div class="sys-row">HOST <span class="sys-val">192.168.0.1</span></div>
+          <div class="sys-row">OS <span class="sys-val">HackerOS 2.0</span></div>
+          <div class="sys-row">UPTIME <span class="sys-val" id="sysUptime">00:00</span></div>
+          <div class="sys-row">STATUS <span class="sys-val blink-green">● ONLINE</span></div>
         </div>
-    </div>
+      </div>
 
-    <div id="popup-sitemap" class="fixed inset-0 z-50 hidden bg-black/80 flex items-center justify-center px-4 backdrop-blur-sm">
-        <div class="bg-neutral-900 border border-neutral-700 rounded-xl w-full max-w-md overflow-hidden">
-            <div class="flex justify-between items-center p-4 border-b border-neutral-800 bg-black/50">
-                <h3 class="font-bold text-yellow-500 uppercase tracking-widest text-sm"><i class="fas fa-sitemap mr-2"></i> Peta Situs</h3>
-                <button onclick="tutupPopup('popup-sitemap')" class="text-gray-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+      <!-- CONTENT -->
+      <div class="content-area">
+
+        <!-- AUTO TERMINAL -->
+        <div class="tool-panel active" id="tool-terminal">
+          <div class="panel-header">
+            <span>⌨ Auto Terminal</span>
+            <div class="panel-actions">
+              <select id="termScenario" class="sel-scenario">
+                <option value="hackserver">Hack Server</option>
+                <option value="crackpass">Crack Password</option>
+                <option value="traceip">Trace IP</option>
+                <option value="stealthmode">Stealth Mode</option>
+                <option value="databreach">Data Breach</option>
+                <option value="ransomware">Ransomware Deploy</option>
+              </select>
+              <button class="pnl-btn green" onclick="startTerminal()">▶ RUN</button>
+              <button class="pnl-btn red" onclick="clearTerminal()">✕ CLEAR</button>
             </div>
-            <div class="p-6">
-                <input type="text" id="input-sitemap" class="w-full bg-black border border-neutral-700 p-3 rounded-lg text-white focus:border-yellow-500 outline-none text-sm mb-4" placeholder="sitemap.xml">
-                <button onclick="jalankanSitemap()" class="w-full bg-yellow-600 hover:bg-yellow-700 text-black font-bold py-3 rounded-lg uppercase text-sm flex justify-center items-center">
-                    <i class="fas fa-upload mr-2"></i> Kirim Sitemap
-                </button>
-                
-                <div class="mt-4 bg-black border border-neutral-800 rounded-lg p-3 min-h-[80px]">
-                    <p class="text-[10px] text-gray-500 uppercase mb-1 border-b border-neutral-800 pb-1">Progres Real-time:</p>
-                    <pre id="log-sitemap" class="text-xs text-yellow-500 whitespace-pre-wrap word-break">Menunggu perintah...</pre>
-                </div>
-            </div>
+          </div>
+          <div class="terminal-body" id="terminalBody">
+            <div class="placeholder-text">// Select a scenario and click RUN</div>
+          </div>
         </div>
-    </div>
 
-    <script src="app.js"></script>
+        <!-- IP TRACER -->
+        <div class="tool-panel" id="tool-iptracer">
+          <div class="panel-header">
+            <span>🌐 IP Tracer</span>
+            <div class="panel-actions">
+              <input type="text" id="ipInput" class="hack-input" placeholder="Enter target IP..."/>
+              <button class="pnl-btn green" onclick="startIpTrace()">▶ TRACE</button>
+            </div>
+          </div>
+          <div class="terminal-body" id="ipBody">
+            <div class="placeholder-text">// Enter IP address and click TRACE</div>
+          </div>
+        </div>
+
+        <!-- PASSWORD CRACKER -->
+        <div class="tool-panel" id="tool-pwcracker">
+          <div class="panel-header">
+            <span>🔑 Password Cracker</span>
+            <div class="panel-actions">
+              <input type="text" id="pwTarget" class="hack-input" placeholder="Target username..."/>
+              <select id="pwMethod" class="sel-scenario">
+                <option value="bruteforce">Brute Force</option>
+                <option value="dictionary">Dictionary</option>
+                <option value="rainbow">Rainbow Table</option>
+              </select>
+              <button class="pnl-btn green" onclick="startPwCracker()">▶ CRACK</button>
+            </div>
+          </div>
+          <div class="terminal-body" id="pwBody">
+            <div class="placeholder-text">// Enter target and select method</div>
+          </div>
+          <div class="progress-wrap" id="pwProgressWrap" style="display:none;">
+            <div class="progress-label">
+              <span id="pwProgressLabel">Cracking...</span>
+              <span id="pwProgressPct">0%</span>
+            </div>
+            <div class="progress-bg"><div class="progress-fill green-fill" id="pwProgressFill"></div></div>
+          </div>
+        </div>
+
+        <!-- DB BREACH -->
+        <div class="tool-panel" id="tool-dbbreach">
+          <div class="panel-header">
+            <span>🗄 Database Breach</span>
+            <div class="panel-actions">
+              <input type="text" id="dbTarget" class="hack-input" placeholder="Target domain..."/>
+              <button class="pnl-btn green" onclick="startDbBreach()">▶ BREACH</button>
+            </div>
+          </div>
+          <div class="terminal-body" id="dbBody">
+            <div class="placeholder-text">// Enter target domain to breach</div>
+          </div>
+          <div class="progress-wrap" id="dbProgressWrap" style="display:none;">
+            <div class="progress-label">
+              <span id="dbProgressLabel">Injecting...</span>
+              <span id="dbProgressPct">0%</span>
+            </div>
+            <div class="progress-bg"><div class="progress-fill red-fill" id="dbProgressFill"></div></div>
+          </div>
+        </div>
+
+        <!-- FIREWALL BYPASS -->
+        <div class="tool-panel" id="tool-firewall">
+          <div class="panel-header">
+            <span>🛡 Firewall Bypass</span>
+            <div class="panel-actions">
+              <input type="text" id="fwTarget" class="hack-input" placeholder="Target host..."/>
+              <button class="pnl-btn green" onclick="startFirewall()">▶ BYPASS</button>
+            </div>
+          </div>
+          <div class="terminal-body" id="fwBody">
+            <div class="placeholder-text">// Enter target host to bypass firewall</div>
+          </div>
+          <div class="progress-wrap" id="fwProgressWrap" style="display:none;">
+            <div class="progress-label">
+              <span id="fwProgressLabel">Bypassing...</span>
+              <span id="fwProgressPct">0%</span>
+            </div>
+            <div class="progress-bg"><div class="progress-fill cyan-fill" id="fwProgressFill"></div></div>
+          </div>
+        </div>
+
+        <!-- SATELLITE HACK -->
+        <div class="tool-panel" id="tool-satellite">
+          <div class="panel-header">
+            <span>🛰 Satellite Hack</span>
+            <div class="panel-actions">
+              <select id="satTarget" class="sel-scenario">
+                <option value="STARLINK-4821">STARLINK-4821</option>
+                <option value="KEYHOLE-12">KEYHOLE-12</option>
+                <option value="COSMOS-2499">COSMOS-2499</option>
+                <option value="INTELSAT-37">INTELSAT-37</option>
+              </select>
+              <button class="pnl-btn green" onclick="startSatellite()">▶ CONNECT</button>
+            </div>
+          </div>
+          <div class="terminal-body" id="satBody">
+            <div class="placeholder-text">// Select satellite and click CONNECT</div>
+          </div>
+          <div class="progress-wrap" id="satProgressWrap" style="display:none;">
+            <div class="progress-label">
+              <span id="satProgressLabel">Connecting...</span>
+              <span id="satProgressPct">0%</span>
+            </div>
+            <div class="progress-bg"><div class="progress-fill cyan-fill" id="satProgressFill"></div></div>
+          </div>
+        </div>
+
+        <!-- VIRUS DEPLOY -->
+        <div class="tool-panel" id="tool-virus">
+          <div class="panel-header">
+            <span>🦠 Virus Deploy</span>
+            <div class="panel-actions">
+              <input type="text" id="virusTarget" class="hack-input" placeholder="Target network..."/>
+              <select id="virusType" class="sel-scenario">
+                <option value="trojan">Trojan</option>
+                <option value="worm">Worm</option>
+                <option value="ransomware">Ransomware</option>
+                <option value="spyware">Spyware</option>
+              </select>
+              <button class="pnl-btn green" onclick="startVirus()">▶ DEPLOY</button>
+            </div>
+          </div>
+          <div class="terminal-body" id="virusBody">
+            <div class="placeholder-text">// Enter target network and select virus type</div>
+          </div>
+          <div class="progress-wrap" id="virusProgressWrap" style="display:none;">
+            <div class="progress-label">
+              <span id="virusProgressLabel">Deploying...</span>
+              <span id="virusProgressPct">0%</span>
+            </div>
+            <div class="progress-bg"><div class="progress-fill red-fill" id="virusProgressFill"></div></div>
+          </div>
+        </div>
+
+        <!-- SOCIAL ENGINEER -->
+        <div class="tool-panel" id="tool-social">
+          <div class="panel-header">
+            <span>🎭 Social Engineer</span>
+            <div class="panel-actions">
+              <input type="text" id="socialTarget" class="hack-input" placeholder="Target name..."/>
+              <select id="socialType" class="sel-scenario">
+                <option value="phishing">Phishing Email</option>
+                <option value="smishing">SMS Phishing</option>
+                <option value="vishing">Voice Phishing</option>
+              </select>
+              <button class="pnl-btn green" onclick="startSocial()">▶ GENERATE</button>
+            </div>
+          </div>
+          <div class="terminal-body" id="socialBody">
+            <div class="placeholder-text">// Enter target name and select attack type</div>
+          </div>
+        </div>
+
+        <!-- FAKE COMPILER -->
+        <div class="tool-panel" id="tool-compiler">
+          <div class="panel-header">
+            <span>💻 Fake Compiler</span>
+            <div class="panel-actions">
+              <select id="compilerLang" class="sel-scenario">
+                <option value="python">Python</option>
+                <option value="c">C/C++</option>
+                <option value="java">Java</option>
+                <option value="rust">Rust</option>
+                <option value="asm">Assembly</option>
+              </select>
+              <button class="pnl-btn green" onclick="startCompiler()">▶ COMPILE</button>
+            </div>
+          </div>
+          <div class="code-editor" id="codeEditor" contenteditable="true" spellcheck="false">// Paste or type your code here...
+
+def exploit_target(host, port):
+    import socket
+    s = socket.socket()
+    s.connect((host, port))
+    payload = b"\x90" * 100
+    s.send(payload)
+    return s.recv(1024)</div>
+          <div class="terminal-body" id="compilerBody" style="height:180px;">
+            <div class="placeholder-text">// Output will appear here after compile</div>
+          </div>
+          <div class="progress-wrap" id="compilerProgressWrap" style="display:none;">
+            <div class="progress-label">
+              <span id="compilerProgressLabel">Compiling...</span>
+              <span id="compilerProgressPct">0%</span>
+            </div>
+            <div class="progress-bg"><div class="progress-fill green-fill" id="compilerProgressFill"></div></div>
+          </div>
+        </div>
+
+        <!-- CMD TERMINAL -->
+        <div class="tool-panel" id="tool-cmd">
+          <div class="panel-header">
+            <span>$ CMD Terminal</span>
+            <div class="panel-actions">
+              <button class="pnl-btn red" onclick="clearCmd()">✕ CLEAR</button>
+            </div>
+          </div>
+          <div class="terminal-body" id="cmdBody">
+            <div class="cmd-line green-text">HackerOS v2.0 — Type <span class="cyan-text">help</span> for available commands</div>
+            <div class="cmd-line green-text">─────────────────────────────────────</div>
+          </div>
+          <div class="cmd-input-wrap">
+            <span class="cmd-prompt">root@hackeros:~$</span>
+            <input type="text" id="cmdInput" class="cmd-input" placeholder="Type command..." onkeydown="handleCmd(event)"/>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
